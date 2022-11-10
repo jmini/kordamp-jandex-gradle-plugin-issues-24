@@ -1,0 +1,42 @@
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexReader;
+import org.jboss.jandex.MethodInfo;
+
+buildscript {
+    dependencies {
+        classpath 'io.smallrye:jandex:3.0.3'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'org.kordamp.gradle.jandex' version '1.0.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.register('printMethods') {
+    dependsOn tasks.named('jandex')
+    doLast {
+        Index index
+        try (FileInputStream input = new FileInputStream("build/resources/main/META-INF/jandex.idx")) {
+            IndexReader reader = new IndexReader(input)
+            index = reader.read()
+        }
+
+        ClassInfo classByName = Objects.requireNonNull(
+            index.getClassByName(DotName.createSimple("com.sample.Test")),
+            "com.sample.Test is missing from jandex")
+        for (MethodInfo method : classByName.methods()) {
+            System.out.println(method.toString())
+        }
+    }
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('printMethods')
+}
