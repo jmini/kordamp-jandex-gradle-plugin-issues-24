@@ -19,6 +19,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.named('jandex') {
+    inputs.files(sourceSets.findByName('main').output.classesDirs*.absolutePath.flatten())
+        .withPropertyName('sourceFiles')
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 tasks.register('printMethods') {
     dependsOn tasks.named('jandex')
     doLast {
